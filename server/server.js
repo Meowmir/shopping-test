@@ -3,10 +3,8 @@ import fs from 'fs'
 import path from 'path'
 import { fileURLToPath } from 'url';
 import bodyParser from 'body-parser';
+import cors from "cors";
 
-
-
-// fs = filesystem, path = build better paths
 
 // https://flaviocopes.com/fix-dirname-not-defined-es-module-scope/
 const __filename = fileURLToPath(import.meta.url);
@@ -20,18 +18,8 @@ const port = 3001
 const muFiles = fs.readdirSync(dataPath)
 const filesContent = fs.readFileSync(path.join(dataPath, muFiles[0]), "UTF8")
 
-
-/**
- * TODO
- * use fs to read and write files
- * app.post (/shopping) to create a list (if not exist)
- * app.get(/shopping/:id) to get a list
- * app.post(/shopping/:id) to add an item and amount (merging if existing)
- * app.delete(/shopping/:id) to delete list
- * app.delete(/shopping/:id/:item) to delete item in list
- */
-
 app.use(bodyParser.json())
+app.use(cors())
 
 app.get('/shopping', (req, res, next) => {
     fs.readdir(dataPath, (err, data) => {
