@@ -1,6 +1,6 @@
 import "./App.css";
-import {QueryClient, QueryClientProvider, useQuery} from 'react-query'
-import {useState} from "react";
+import {QueryClient, QueryClientProvider} from 'react-query'
+import {ShoppingLists} from "./components/show-lists.tsx";
 
 const queryClient = new QueryClient()
 
@@ -11,63 +11,10 @@ function App() {
     <>
       <QueryClientProvider client={queryClient}>
         <h1>SHOPPING LISTS</h1>
-        <Shopping></Shopping>
+        <ShoppingLists></ShoppingLists>
       </QueryClientProvider>
     </>
   )
 }
 
 export default App
-const fetchLists = async () => {
-  const res = await fetch('http://localhost:3001/shopping');
-  if (!res.ok) {
-    throw new Error('Network response was not ok');
-  }
-  const data: string[] = await res.json();
-  return data;
-};
-
-function Shopping() {
-  const [showList, setShowList] = useState<string | null>(null)
-
-  const {isLoading, isError, data, error} = useQuery('lists', fetchLists)
-
-  if(!data){
-    return <p>NO DATA</p>
-  }
-
-
-  return <>
-    <ul>
-      {data.map(list => (
-        <li key={list} onClick={() => {setShowList(list)}}>{list}</li>
-      ))}
-    </ul>
-    {showList ? <ShowOneList name={showList}/> : <p></p>}
-  </>
-}
-
-const fetchList = async (name: string) => {
-  const res = await fetch(`http://localhost:3001/shopping/${name}`);
-  if (!res.ok) {
-    throw new Error('Network response was not ok');
-  }
-  const data: {[index: string]: number} = await res.json();
-  return data;
-};
-
-function ShowOneList({name}:{name: string}){
-  const {isLoading, isError, data, error} = useQuery(name, () => fetchList(name))
-
-  if(!data){
-    return null
-  }
-
-  return <>
-    <ul>
-      {Object.entries(data).map(([key, value]) =>
-        <li key={key}>{key}: {value}<sup> pcs.</sup></li>
-      )}
-    </ul>
-  </>
-}
