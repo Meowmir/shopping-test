@@ -43,5 +43,31 @@ function Shopping() {
         <li key={list} onClick={() => {setShowList(list)}}>{list}</li>
       ))}
     </ul>
+    {showList ? <ShowOneList name={showList}/> : <p></p>}
+  </>
+}
+
+const fetchList = async (name: string) => {
+  const res = await fetch(`http://localhost:3001/shopping/${name}`);
+  if (!res.ok) {
+    throw new Error('Network response was not ok');
+  }
+  const data: {[index: string]: number} = await res.json();
+  return data;
+};
+
+function ShowOneList({name}:{name: string}){
+  const {isLoading, isError, data, error} = useQuery(name, () => fetchList(name))
+
+  if(!data){
+    return null
+  }
+
+  return <>
+    <ul>
+      {Object.entries(data).map(([key, value]) =>
+        <li key={key}>{key}: {value}<sup> pcs.</sup></li>
+      )}
+    </ul>
   </>
 }
