@@ -33,8 +33,18 @@ const filesContent = fs.readFileSync(path.join(dataPath, muFiles[0]), "UTF8")
 
 app.use(bodyParser.json())
 
-app.get('/', (req, res) => {
-    res.send('Hello World!')
+app.get('/shopping', (req, res, next) => {
+    fs.readdir(dataPath, (err, data) => {
+        if(err){
+            next(err)
+        } else {
+            res.json(
+                data
+                    .map((file) => file.replace(".json", ""))
+                    .filter((file) => !file.startsWith("."))
+            )
+        }
+    })
 })
 
 app.post('/shopping', (req, res, next) => {
@@ -65,14 +75,38 @@ app.put('/shopping/:name', (req, res, next) => {
             next(err)
         } else {
             const parsedExistingData = JSON.parse(data)
-            const newData = req.body.name
-            const combined = {...parsedExistingData, [newData]: 1}
+            const newDataItem = req.body.item
+            const combined = parsedExistingData[newDataItem]
+                ? {...parsedExistingData, [newDataItem]: parsedExistingData[newDataItem] + 1}
+                : {...parsedExistingData, [newDataItem]: 1}
 
             fs.writeFile(pathToFile, JSON.stringify(combined), (error) => {
                 if(error){
                     next(error)
                 } else {
                     res.json(combined)
+                }
+            })
+        }
+    })
+})
+
+app.delete('/shopping/:name/:item', (req, res, next) => {
+    const {name, item} =  req.params
+    const pathToFile = path.join(dataPath, `${name}.json`)
+
+    fs.readFile(pathToFile, 'utf-8', (err, data) => {
+        if(err){
+            next(err)
+        } else {
+            const parsedExistingData = JSON.parse(data)
+            delete parsedExistingData[item]
+
+            fs.writeFile(pathToFile, JSON.stringify(parsedExistingData), (error) => {
+                if(error){
+                    next(error)
+                } else {
+                    res.json(parsedExistingData)
                 }
             })
         }
